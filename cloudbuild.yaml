@@ -1,0 +1,38 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_IMAGE_URI}
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_IMAGE_URI}
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_IMAGE_URI}
+      - --region
+      - ${_REGION}
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8080"
+      - --set-env-vars
+      - APP_ENV=production
+
+images:
+  - ${_IMAGE_URI}
+
+substitutions:
+  _SERVICE_NAME: flowmind-api
+  _REGION: asia-southeast1
+  _IMAGE_URI: asia-southeast1-docker.pkg.dev/$PROJECT_ID/flowmind/flowmind-api:latest
