@@ -6,14 +6,52 @@ import json
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any
-
-from google.adk.agents import Agent
+from typing import Any, Callable
 
 from config import get_settings
 from tools.mcp_tools import book_calendar_tool, create_task_tool, retrieve_notes_tool
 
 settings = get_settings()
+
+
+@dataclass
+class AgentDefinition:
+    name: str
+    model: str
+    description: str
+    instruction: str
+    tools: list[Callable[..., Any]] | None = None
+    sub_agents: list["AgentDefinition"] | None = None
+
+
+def _build_agent(
+    *,
+    name: str,
+    model: str,
+    description: str,
+    instruction: str,
+    tools: list[Callable[..., Any]] | None = None,
+    sub_agents: list[AgentDefinition] | None = None,
+) -> Any:
+    if settings.flowmind_enable_adk:
+        from google.adk.agents import Agent
+
+        return Agent(
+            name=name,
+            model=model,
+            description=description,
+            instruction=instruction,
+            tools=tools,
+            sub_agents=sub_agents,
+        )
+    return AgentDefinition(
+        name=name,
+        model=model,
+        description=description,
+        instruction=instruction,
+        tools=tools,
+        sub_agents=sub_agents,
+    )
 
 
 def _make_embedding(text: str, dimensions: int) -> list[float]:
@@ -62,7 +100,7 @@ class AgentAction:
 
 class TaskAgentService:
     def __init__(self) -> None:
-        self.agent = Agent(
+        self.agent = _build_agent(
             name="task_agent",
             model=settings.vertex_ai_model,
             description="Creates and manages task records.",
@@ -85,7 +123,7 @@ class TaskAgentService:
 
 class CalendarAgentService:
     def __init__(self) -> None:
-        self.agent = Agent(
+        self.agent = _build_agent(
             name="calendar_agent",
             model=settings.vertex_ai_model,
             description="Books calendar events after availability checks.",
@@ -109,7 +147,7 @@ class CalendarAgentService:
 
 class NotesAgentService:
     def __init__(self) -> None:
-        self.agent = Agent(
+        self.agent = _build_agent(
             name="notes_agent",
             model=settings.vertex_ai_model,
             description="Retrieves semantically similar notes.",
@@ -135,7 +173,7 @@ class OrchestratorAgentService:
         self.task_agent = TaskAgentService()
         self.calendar_agent = CalendarAgentService()
         self.notes_agent = NotesAgentService()
-        self.agent = Agent(
+        self.agent = _build_agent(
             name="orchestrator_agent",
             model=settings.vertex_ai_model,
             description="Semantic router and aggregator for FlowMind.",

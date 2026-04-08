@@ -81,14 +81,22 @@ async def retrieve_notes_tool(
     limit: int | None = None,
 ) -> dict[str, Any]:
     result_limit = limit or settings.flowmind_notes_default_limit
-    query = """
+    similarity_query = """
         SELECT id, content, 1 - (embedding <=> $1::vector) AS similarity
         FROM notes
         ORDER BY embedding <=> $1::vector
         LIMIT $2;
     """
+    fallback_query = """
+        SELECT id, content, 0.0 AS similarity
+        FROM notes
+        ORDER BY id DESC
+        LIMIT $1;
+    """
     async with db_manager.acquire() as connection:
-        rows = await connection.fetch(query, query_embedding, result_limit)
+        rows = await connection.fetch(similarity_query, query_embedding, result_limit)
+        if not rows:
+            rows = await connection.fetch(fallback_query, result_limit)
 
     notes = [
         {

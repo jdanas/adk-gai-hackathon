@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: flowmind-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: flowmind
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - flowmind_postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/local_seed.sql:/docker-entrypoint-initdb.d/02-local-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flowmind"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  flowmind_postgres_data:

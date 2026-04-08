@@ -30,6 +30,8 @@ class Settings(BaseSettings):
 
     notes_embedding_dim: int = Field(default=768, alias="NOTES_EMBEDDING_DIM")
     flowmind_notes_default_limit: int = Field(default=5, alias="FLOWMIND_NOTES_DEFAULT_LIMIT")
+    flowmind_enable_adk: bool = Field(default=False, alias="FLOWMIND_ENABLE_ADK")
+    flowmind_enable_mcp: bool = Field(default=False, alias="FLOWMIND_ENABLE_MCP")
 
     mcp_server_name: str = Field(default="flowmind-mcp", alias="MCP_SERVER_NAME")
     mcp_transport: str = Field(default="streamable-http", alias="MCP_TRANSPORT")

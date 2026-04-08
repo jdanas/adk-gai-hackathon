@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlowMind Demo Console</title>
+    <style>
+      :root {
+        --bg: #f4efe5;
+        --ink: #12202b;
+        --muted: #52606d;
+        --line: rgba(18, 32, 43, 0.12);
+        --card: rgba(255, 251, 245, 0.92);
+        --accent: #d75b2a;
+        --accent-deep: #a63e16;
+        --accent-soft: #ffd9c7;
+        --ok: #1f7a59;
+        --shadow: 0 24px 70px rgba(25, 39, 52, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(215, 91, 42, 0.18), transparent 30%),
+          radial-gradient(circle at top right, rgba(24, 122, 89, 0.12), transparent 32%),
+          linear-gradient(180deg, #f8f2e8 0%, #efe5d7 100%);
+        min-height: 100vh;
+      }
+
+      .shell {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px 56px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 24px;
+        align-items: stretch;
+      }
+
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+      }
+
+      .hero-copy {
+        padding: 36px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: rgba(18, 32, 43, 0.05);
+        color: var(--muted);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 18px 0 12px;
+        font-size: clamp(2.4rem, 5vw, 4.8rem);
+        line-height: 0.94;
+        letter-spacing: -0.06em;
+      }
+
+      .hero-copy p {
+        margin: 0;
+        max-width: 55ch;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 28px;
+      }
+
+      .stat {
+        padding: 18px;
+        border-radius: 20px;
+        background: #fffdf9;
+        border: 1px solid var(--line);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 1.6rem;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+
+      .stat span {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .hero-side {
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .signal {
+        flex: 1;
+        padding: 22px;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(255, 244, 237, 0.95));
+      }
+
+      .signal h2,
+      .workspace h2 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .signal ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .workspace {
+        margin-top: 24px;
+        padding: 18px;
+      }
+
+      .prompt-box {
+        width: 100%;
+        min-height: 190px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.86);
+        padding: 18px 20px;
+        font: inherit;
+        font-size: 1rem;
+        color: var(--ink);
+        resize: vertical;
+      }
+
+      .prompt-box:focus {
+        outline: 2px solid rgba(215, 91, 42, 0.18);
+        border-color: rgba(215, 91, 42, 0.5);
+      }
+
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 14px 20px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 140ms ease, opacity 140ms ease, background 140ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: wait;
+        transform: none;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: #fff9f3;
+      }
+
+      .secondary {
+        background: #fff7ef;
+        color: var(--accent-deep);
+        border: 1px solid rgba(215, 91, 42, 0.18);
+      }
+
+      .status {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .response-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .response-card {
+        padding: 22px;
+      }
+
+      .actions {
+        display: grid;
+        gap: 14px;
+      }
+
+      .action {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 16px 18px;
+        background: #fffdf9;
+      }
+
+      .action-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+        align-items: center;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(31, 122, 89, 0.11);
+        color: var(--ok);
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .action strong {
+        font-size: 1rem;
+      }
+
+      .action p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "SFMono-Regular", "Menlo", "Monaco", monospace;
+        font-size: 0.88rem;
+        line-height: 1.6;
+        color: #183241;
+      }
+
+      .footer-note {
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 920px) {
+        .hero,
+        .response-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <article class="panel hero-copy">
+          <div class="eyebrow">FlowMind / Chaos Manager Prototype</div>
+          <h1>One prompt. Three agents. Structured action.</h1>
+          <p>
+            This demo console sends a single messy request into FlowMind and shows how the
+            orchestrator fans out into task, calendar, and notes actions, then rolls the result
+            back into one API response.
+          </p>
+          <div class="stat-grid">
+            <div class="stat">
+              <strong>FastAPI</strong>
+              <span>HTTP entrypoint and demo surface</span>
+            </div>
+            <div class="stat">
+              <strong>pgvector</strong>
+              <span>Semantic note retrieval for the notes agent</span>
+            </div>
+            <div class="stat">
+              <strong>Cloud Run</strong>
+              <span>Same code path can run locally or serverless</span>
+            </div>
+          </div>
+        </article>
+        <aside class="panel hero-side">
+          <div class="signal">
+            <h2>What This UI Covers</h2>
+            <ul>
+              <li>Submits the prompt to <code>/api/v1/orchestrate</code>.</li>
+              <li>Renders each agent action as its own result card.</li>
+              <li>Shows the raw JSON payload for API-centric demos.</li>
+            </ul>
+          </div>
+          <div class="signal">
+            <h2>Suggested Demo Prompt</h2>
+            <ul>
+              <li>Create a task to send the investor update.</li>
+              <li>Book a 30 minute demo rehearsal.</li>
+              <li>Search notes about the Chaos Manager prototype.</li>
+            </ul>
+          </div>
+        </aside>
+      </section>
+
+      <section class="panel workspace">
+        <h2>Prompt Console</h2>
+        <textarea class="prompt-box" id="prompt">
+Create a task to send the investor update, book a 30 minute demo rehearsal, and search notes about the chaos manager prototype.</textarea
+        >
+        <div class="toolbar">
+          <div class="button-row">
+            <button class="primary" id="runButton">Run FlowMind</button>
+            <button class="secondary" id="sampleButton">Load Alternate Prompt</button>
+          </div>
+          <div class="status" id="status">Ready for orchestration.</div>
+        </div>
+
+        <div class="response-grid">
+          <section class="panel response-card">
+            <h2>Agent Actions</h2>
+            <div class="actions" id="actions"></div>
+            <div class="footer-note">
+              The cards below are rendered from the same JSON payload returned by the API.
+            </div>
+          </section>
+
+          <section class="panel response-card">
+            <h2>Raw Response</h2>
+            <pre id="rawResponse">No response yet.</pre>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const promptEl = document.getElementById("prompt");
+      const runButton = document.getElementById("runButton");
+      const sampleButton = document.getElementById("sampleButton");
+      const actionsEl = document.getElementById("actions");
+      const rawResponseEl = document.getElementById("rawResponse");
+      const statusEl = document.getElementById("status");
+
+      const alternatePrompt =
+        "Schedule a one hour customer check-in next hour, create a follow up task for product feedback, and search notes about demo stability.";
+
+      function setStatus(message) {
+        statusEl.textContent = message;
+      }
+
+      function renderActions(actions) {
+        actionsEl.innerHTML = "";
+        if (!actions || actions.length === 0) {
+          actionsEl.innerHTML = "<div class='action'><p>No actions returned.</p></div>";
+          return;
+        }
+
+        for (const item of actions) {
+          const card = document.createElement("article");
+          card.className = "action";
+          card.innerHTML = `
+            <div class="action-top">
+              <strong>${item.type}</strong>
+              <span class="pill">${item.action}</span>
+            </div>
+            <p>${item.details}</p>
+          `;
+          actionsEl.appendChild(card);
+        }
+      }
+
+      async function runPrompt() {
+        const prompt = promptEl.value.trim();
+        if (!prompt) {
+          setStatus("Enter a prompt first.");
+          return;
+        }
+
+        runButton.disabled = true;
+        setStatus("FlowMind is orchestrating agents...");
+
+        try {
+          const response = await fetch("/api/v1/orchestrate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt }),
+          });
+
+          const payload = await response.json();
+          rawResponseEl.textContent = JSON.stringify(payload, null, 2);
+
+          if (!response.ok) {
+            renderActions([]);
+            setStatus(`Request failed with status ${response.status}.`);
+            return;
+          }
+
+          renderActions(payload.actions);
+          setStatus("Orchestration complete.");
+        } catch (error) {
+          renderActions([]);
+          rawResponseEl.textContent = JSON.stringify(
+            { error: error instanceof Error ? error.message : String(error) },
+            null,
+            2,
+          );
+          setStatus("Request failed. Check the API server.");
+        } finally {
+          runButton.disabled = false;
+        }
+      }
+
+      runButton.addEventListener("click", runPrompt);
+      sampleButton.addEventListener("click", () => {
+        promptEl.value = alternatePrompt;
+        setStatus("Alternate prompt loaded.");
+      });
+
+      renderActions([]);
+    </script>
+  </body>
+</html>

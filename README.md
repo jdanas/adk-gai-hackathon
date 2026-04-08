@@ -34,10 +34,19 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-uvicorn main:app --reload --host 0.0.0.0 --port 8080
+docker compose up -d postgres
+python scripts/run_local_demo.py
 ```
 
 The HTTP API is exposed at `/api/v1/orchestrate`, the health check is `/healthz`, and the MCP server is mounted at `/mcp`.
+
+For the local developer path used in this repository:
+
+- Start the bundled Postgres + pgvector service with `docker compose up -d postgres`.
+- Use a local `.env` that leaves `ALLOYDB_INSTANCE_URI` empty and points `ALLOYDB_DSN` to `127.0.0.1`.
+- The container auto-applies [`db/schema.sql`](/Users/kade/Codes/adk-gai-hackathon/db/schema.sql) and demo seed data from [`db/local_seed.sql`](/Users/kade/Codes/adk-gai-hackathon/db/local_seed.sql) on first boot.
+- Start the API with [`scripts/run_local_demo.py`](/Users/kade/Codes/adk-gai-hackathon/scripts/run_local_demo.py).
+- If you need a public demo URL, run `ngrok http 8080` after the FastAPI server is up.
 
 ## Initialize the Database
 

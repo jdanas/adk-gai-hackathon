@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from starlette.routing import Mount
 
@@ -13,6 +15,7 @@ from tools.mcp_tools import mcp_server
 
 settings = get_settings()
 orchestrator = OrchestratorAgentService()
+FRONTEND_INDEX = Path(__file__).parent / "frontend" / "index.html"
 
 
 class HealthResponse(BaseModel):
@@ -39,7 +42,10 @@ class OrchestrateResponse(BaseModel):
 async def lifespan(_: FastAPI):
     await db_manager.connect()
     try:
-        async with mcp_server.session_manager.run():
+        if settings.flowmind_enable_mcp:
+            async with mcp_server.session_manager.run():
+                yield
+        else:
             yield
     finally:
         await db_manager.disconnect()
@@ -51,7 +57,13 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.router.routes.append(Mount("/mcp", app=mcp_server.streamable_http_app()))
+if settings.flowmind_enable_mcp:
+    app.router.routes.append(Mount("/mcp", app=mcp_server.streamable_http_app()))
+
+
+@app.get("/", include_in_schema=False)
+async def root() -> FileResponse:
+    return FileResponse(FRONTEND_INDEX)
 
 
 @app.get("/healthz", response_model=HealthResponse)
