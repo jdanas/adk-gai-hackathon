@@ -48,3 +48,8 @@ Apply [`db/schema.sql`](/Users/kade/Codes/adk-gai-hackathon/db/schema.sql) to yo
 ```bash
 gcloud builds submit --config cloudbuild.yaml
 ```
+
+For Cloud Run, the scaffold supports two database connection modes:
+
+- Recommended production path: set `ALLOYDB_INSTANCE_URI` and use the AlloyDB Python connector over private IP.
+- Local fallback: omit `ALLOYDB_INSTANCE_URI` and use `ALLOYDB_DSN`.

@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     alloydb_password: str = Field(default="", alias="ALLOYDB_PASSWORD")
     alloydb_ssl: str = Field(default="prefer", alias="ALLOYDB_SSL")
     alloydb_dsn: str | None = Field(default=None, alias="ALLOYDB_DSN")
+    alloydb_instance_uri: str | None = Field(default=None, alias="ALLOYDB_INSTANCE_URI")
+    alloydb_ip_type: str = Field(default="PRIVATE", alias="ALLOYDB_IP_TYPE")
+    alloydb_enable_iam_auth: bool = Field(default=False, alias="ALLOYDB_ENABLE_IAM_AUTH")
 
     notes_embedding_dim: int = Field(default=768, alias="NOTES_EMBEDDING_DIM")
     flowmind_notes_default_limit: int = Field(default=5, alias="FLOWMIND_NOTES_DEFAULT_LIMIT")

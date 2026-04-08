@@ -33,6 +33,6 @@ images:
   - ${_IMAGE_URI}
 
 substitutions:
-  _SERVICE_NAME: flowmind-api
+  _SERVICE_NAME: adk-gai-hackathon
   _REGION: asia-southeast1
   _IMAGE_URI: asia-southeast1-docker.pkg.dev/$PROJECT_ID/flowmind/flowmind-api:latest
