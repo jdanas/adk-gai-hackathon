@@ -68,20 +68,21 @@ def ensure_database(connector: Connector, database_name: str) -> None:
     print("Connecting to postgres database for bootstrap...", flush=True)
     connection = connect_db(connector, "postgres")
     connection.autocommit = True
+    cursor = connection.cursor()
     try:
-        with connection.cursor() as cursor:
-            print(f"Checking whether database '{database_name}' exists...", flush=True)
-            cursor.execute(
-                "SELECT 1 FROM pg_database WHERE datname = %s",
-                (database_name,),
-            )
-            exists = cursor.fetchone()
-            if not exists:
-                print(f"Creating database '{database_name}'...", flush=True)
-                cursor.execute(f'CREATE DATABASE "{database_name}"')
-            else:
-                print(f"Database '{database_name}' already exists.", flush=True)
+        print(f"Checking whether database '{database_name}' exists...", flush=True)
+        cursor.execute(
+            "SELECT 1 FROM pg_database WHERE datname = %s",
+            (database_name,),
+        )
+        exists = cursor.fetchone()
+        if not exists:
+            print(f"Creating database '{database_name}'...", flush=True)
+            cursor.execute(f'CREATE DATABASE "{database_name}"')
+        else:
+            print(f"Database '{database_name}' already exists.", flush=True)
     finally:
+        cursor.close()
         connection.close()
 
 
@@ -90,13 +91,14 @@ def apply_schema(connector: Connector, database_name: str) -> None:
     print(f"Connecting to database '{database_name}' to apply schema...", flush=True)
     connection = connect_db(connector, database_name)
     connection.autocommit = True
+    cursor = connection.cursor()
     try:
-        with connection.cursor() as cursor:
-            for statement in split_sql_statements(schema_sql):
-                preview = statement.splitlines()[0][:80]
-                print(f"Executing: {preview}", flush=True)
-                cursor.execute(statement)
+        for statement in split_sql_statements(schema_sql):
+            preview = statement.splitlines()[0][:80]
+            print(f"Executing: {preview}", flush=True)
+            cursor.execute(statement)
     finally:
+        cursor.close()
         connection.close()
 
 
