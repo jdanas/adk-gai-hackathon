@@ -1,4 +1,6 @@
 # FlowMind
+<img width="318" height="263" alt="image" src="https://github.com/user-attachments/assets/f7ca8806-abd5-482a-8249-731b0fe3b605" />
+
 
 FlowMind is a prototype multi-agent backend API that accepts unstructured prompts and routes them across task, calendar, and notes agents. The service is designed for Google Cloud Run, uses FastAPI for the HTTP layer, Google ADK for agent definitions, MCP-compatible tool wrappers for system actions, and AlloyDB AI for relational and vector-backed storage.
 
